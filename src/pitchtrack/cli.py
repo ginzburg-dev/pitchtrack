@@ -2,9 +2,16 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
+from dataclasses import replace
 from pathlib import Path
 
 from pitchtrack.pipeline import build_fixture_pipeline
+from pitchtrack.demo.manifest import (
+    MissingDemoSourceError,
+    load_demo_manifest,
+    resolve_soccertrack_assets,
+)
+from pitchtrack.demo.virtual_ptz import generate_demo_clip
 from pitchtrack.schemas import CalibrationStatus
 from pitchtrack.testing.fixture import create_demo_fixture
 
@@ -33,6 +40,20 @@ def build_parser() -> argparse.ArgumentParser:
         default="fixture",
         choices=("fixture", "hybrid_temporal", "baseline_deeplab", "baseline_tvcalib"),
     )
+
+    demo_parser = subparsers.add_parser(
+        "make-demo-clip",
+        help="Create a licensed virtual-PTZ portfolio clip from local SoccerTrack v2 data.",
+    )
+    demo_parser.add_argument("--source-root", required=True, type=Path)
+    demo_parser.add_argument("--out", required=True, type=Path)
+    demo_parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=Path("configs/demo/soccertrack-v2-117093.yaml"),
+    )
+    demo_parser.add_argument("--match-id", default="117093")
+    demo_parser.add_argument("--half", type=int, default=1, choices=(1, 2))
     return parser
 
 
@@ -60,6 +81,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         ).run(args.video, args.out)
         print(f"frames_processed={summary.frames_processed}")
         print(f"output={summary.output_dir}")
+        return 0
+    if args.command == "make-demo-clip":
+        manifest = replace(
+            load_demo_manifest(args.manifest),
+            match_id=str(args.match_id),
+            half=int(args.half),
+        )
+        try:
+            assets = resolve_soccertrack_assets(args.source_root, manifest)
+        except MissingDemoSourceError as exc:
+            parser.error(str(exc))
+        result = generate_demo_clip(assets, manifest, args.out)
+        print(f"video={result.video_path}")
+        print(f"transforms={result.transforms_path}")
+        print(f"quality={result.quality_report_path}")
+        print(f"attribution={result.attribution_path}")
         return 0
     parser.print_help()
     return 0

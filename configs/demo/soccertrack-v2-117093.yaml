@@ -1,0 +1,18 @@
+dataset: SoccerTrack v2
+match_id: "117093"
+half: 1
+license: CC BY 4.0
+source_url: https://huggingface.co/datasets/atomscott/soccertrack-v2
+citation: "Scott et al., SoccerTrack v2, arXiv:2508.01802"
+video_template: videos/{match_id}/{match_id}_panorama_{half_ordinal}_half.mp4
+annotations_template: gsr/{match_id}/{match_id}_{half_ordinal}.json
+duration_s: 45
+output_width: 1920
+output_height: 1080
+visual_gates:
+  min_players: 6
+  min_player_height_px: 80
+  max_player_height_px: 180
+  min_passing_fraction: 0.9
+  min_lighting_score: 0.5
+
