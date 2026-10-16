@@ -13,6 +13,7 @@ from pitchtrack.demo.manifest import (
 )
 from pitchtrack.demo.virtual_ptz import generate_demo_clip
 from pitchtrack.evaluation.benchmark import run_benchmark
+from pitchtrack.media import build_media_assets
 from pitchtrack.schemas import CalibrationStatus
 from pitchtrack.testing.fixture import create_demo_fixture
 
@@ -68,6 +69,17 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark_parser.add_argument("--out", required=True, type=Path)
     benchmark_parser.add_argument("--dataset")
     benchmark_parser.add_argument("--split")
+
+    assets_parser = subparsers.add_parser(
+        "make-assets", help="Build verified GitHub media from a synchronized run."
+    )
+    assets_parser.add_argument("--run", required=True, type=Path)
+    assets_parser.add_argument("--out", required=True, type=Path)
+    assets_parser.add_argument(
+        "--source-kind",
+        required=True,
+        choices=("model", "annotation-reference"),
+    )
     return parser
 
 
@@ -123,6 +135,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         except (FileNotFoundError, ValueError) as exc:
             parser.error(str(exc))
         print(f"metrics={metrics_path}")
+        return 0
+    if args.command == "make-assets":
+        try:
+            manifest = build_media_assets(args.run, args.out, args.source_kind)
+        except (FileNotFoundError, RuntimeError, ValueError) as exc:
+            parser.error(str(exc))
+        print(f"manifest={manifest.path}")
         return 0
     parser.print_help()
     return 0

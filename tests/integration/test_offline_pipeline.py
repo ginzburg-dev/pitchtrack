@@ -61,6 +61,7 @@ def test_offline_pipeline_writes_synchronized_artifacts(tmp_path: Path) -> None:
     metrics = json.loads((output_dir / "metrics.json").read_text("utf-8"))
     assert metadata["video"]["fps"] == 10.0
     assert metadata["frames_processed"] == 6
+    assert metadata["source_kind"] == "fixture"
     assert metrics["frames_processed"] == 6
     assert metrics["calibration_status_counts"] == {"valid": 6}
     assert metrics["dropped_frames"] == 0

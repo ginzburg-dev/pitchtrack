@@ -149,6 +149,7 @@ class OfflinePipeline:
         calibrator: CalibrationSource,
         *,
         config_path: Path | None = None,
+        source_kind: str = "model",
         reader_factory: Callable[[Path], VideoReader] = VideoReader,
     ) -> None:
         self.detector = detector
@@ -157,6 +158,7 @@ class OfflinePipeline:
         self.projector = PitchProjector()
         self.smoother = PitchTrackSmoother()
         self.config_path = config_path
+        self.source_kind = source_kind
         self.reader_factory = reader_factory
 
     def run(self, video_path: str | Path, output_dir: str | Path) -> RunSummary:
@@ -242,6 +244,7 @@ class OfflinePipeline:
                     "input_sha256": _sha256(video_path),
                     "config_path": str(self.config_path.resolve()) if self.config_path else None,
                     "config_sha256": _sha256(self.config_path) if self.config_path else None,
+                    "source_kind": self.source_kind,
                     "video": {
                         "fps": reader.metadata.fps,
                         "width": reader.metadata.width,
@@ -348,6 +351,7 @@ def build_fixture_pipeline(
         tracker,
         calibrator,
         config_path=path,
+        source_kind="fixture",
         reader_factory=reader_factory,
     )
 
@@ -438,6 +442,7 @@ def build_model_pipeline(
         tracker,
         source,
         config_path=path,
+        source_kind="model",
         reader_factory=reader_factory,
     )
 
