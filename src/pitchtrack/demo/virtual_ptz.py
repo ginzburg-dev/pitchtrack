@@ -16,6 +16,10 @@ from pitchtrack.demo.selector import (
     FrameCandidate,
     select_demo_interval,
 )
+from pitchtrack.demo.soccertrack import (
+    annotated_frames_to_candidates,
+    iter_soccertrack_frames,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -235,6 +239,9 @@ def render_virtual_ptz_video(
 
 
 def _load_frame_candidates(path: Path) -> list[FrameCandidate]:
+    shipped_frames = list(iter_soccertrack_frames(path))
+    if shipped_frames:
+        return annotated_frames_to_candidates(shipped_frames)
     data = json.loads(path.read_text(encoding="utf-8"))
     if isinstance(data, dict):
         frames = data.get("frames", data.get("annotations", []))

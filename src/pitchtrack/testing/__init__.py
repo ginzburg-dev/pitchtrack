@@ -1,2 +1,2 @@
-"""Deterministic local fixtures; never use these as portfolio evidence."""
+"""Deterministic local fixtures; never present these as real-world evidence."""
 

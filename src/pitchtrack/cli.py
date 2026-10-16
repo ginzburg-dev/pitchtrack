@@ -44,7 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     demo_parser = subparsers.add_parser(
         "make-demo-clip",
-        help="Create a licensed virtual-PTZ portfolio clip from local SoccerTrack v2 data.",
+        help="Create a licensed virtual-PTZ demo clip from local SoccerTrack v2 data.",
     )
     demo_parser.add_argument("--source-root", required=True, type=Path)
     demo_parser.add_argument("--out", required=True, type=Path)

@@ -1,4 +1,4 @@
-# Portfolio presentation
+# Demo presentation
 
 The demo should open with a 10–15 second annotated sequence, then show image-space
 tracking beside the pitch view and the per-frame calibration status. Include one failure

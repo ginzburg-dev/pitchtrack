@@ -93,7 +93,7 @@ provenance, artifact synchronization, and reproducible evaluation plumbing.
 ## Evaluation and limitations
 
 See [evaluation](docs/evaluation.md) for metric definitions and exact commands, and
-[portfolio presentation](docs/portfolio.md) for claims that are safe to make.
+[demo presentation](docs/demo.md) for claims that are safe to make.
 
 Current limitations:
 
