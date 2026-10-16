@@ -37,6 +37,18 @@ def test_readme_is_github_native_and_contains_no_unsupported_demo_claim() -> Non
     assert "evidence status" not in readme
 
 
+def test_readme_describes_the_cv_architecture_without_ownership_language() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    normalized = " ".join(readme.split())
+
+    assert "## Architecture" in readme
+    assert "multi-object tracking" in readme
+    assert "optical flow" in readme
+    assert "RANSAC" in readme
+    assert "pitch coordinates are omitted when geometry is unreliable" in normalized
+    assert "PitchTrack owns" not in readme
+
+
 def test_architecture_diagram_keeps_only_the_primary_pipeline() -> None:
     diagram = (ROOT / "assets/architecture.svg").read_text(encoding="utf-8").lower()
 

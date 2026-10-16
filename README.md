@@ -11,6 +11,17 @@ continuous night-match clip. Click the frame to view the 4.6-second sequence.*
 
 ![PitchTrack pipeline](assets/architecture.svg)
 
+## Architecture
+
+Pretrained models provide player detections and semantic field observations. PitchTrack
+combines multi-object tracking with masked optical flow and RANSAC-based homography
+estimation to maintain a time-varying planar field transform through a continuous
+moving-camera shot.
+
+Temporal calibration validates geometry frame by frame and reinitialises when needed.
+Player tracks remain available in image space; pitch coordinates are omitted when geometry
+is unreliable.
+
 ## Engineering focus
 
 - **Dynamic calibration:** semantic field observations initialise and reinitialise
@@ -76,13 +87,6 @@ Copy-Item configs\models.example.yaml configs\models.local.yaml
 The field-model adapter contract is deliberately replaceable:
 `image_points_px`, `pitch_points_m`, and `confidences`. Fine-tuned models can replace
 baseline predictors without changing calibration or artifact code.
-
-## What is original
-
-Third-party models provide detections or semantic field observations. PitchTrack owns the
-typed orchestration, moving-object masking, RANSAC geometry, temporal propagation and
-reinitialisation, confidence/status logic, explicit invalid outputs, coordinate smoothing,
-artifact synchronization, media provenance, and reproducible evaluation plumbing.
 
 ## Scope and limitations
 
