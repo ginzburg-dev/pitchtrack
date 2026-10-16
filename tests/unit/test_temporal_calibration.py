@@ -10,7 +10,6 @@ from pitchtrack.field_observation.base import FieldObservation
 from pitchtrack.projection.projector import PitchProjector
 from pitchtrack.schemas import CalibrationStatus, Detection, TrackObservation
 
-
 IMAGE_POINTS = np.array(
     [[10.0, 10.0], [90.0, 10.0], [90.0, 90.0], [10.0, 90.0]],
     dtype=np.float64,

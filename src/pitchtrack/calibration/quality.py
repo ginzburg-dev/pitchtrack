@@ -29,21 +29,10 @@ def score_quality(
     config: QualityConfig,
 ) -> float:
     inliers = _clamp01(diagnostics.inlier_ratio)
-    reprojection = _clamp01(
-        1.0 - diagnostics.reprojection_error / config.max_reprojection_error
-    )
-    coverage = _clamp01(
-        diagnostics.spatial_coverage / config.target_spatial_coverage
-    )
+    reprojection = _clamp01(1.0 - diagnostics.reprojection_error / config.max_reprojection_error)
+    coverage = _clamp01(diagnostics.spatial_coverage / config.target_spatial_coverage)
     temporal = _clamp01(diagnostics.temporal_consistency)
-    age = _clamp01(
-        1.0 - diagnostics.last_valid_age_frames / config.max_prediction_age_frames
-    )
+    age = _clamp01(1.0 - diagnostics.last_valid_age_frames / config.max_prediction_age_frames)
     return _clamp01(
-        0.25 * inliers
-        + 0.25 * reprojection
-        + 0.20 * coverage
-        + 0.20 * temporal
-        + 0.10 * age
+        0.25 * inliers + 0.25 * reprojection + 0.20 * coverage + 0.20 * temporal + 0.10 * age
     )
-

@@ -5,7 +5,6 @@ from collections.abc import Sequence
 from dataclasses import replace
 from pathlib import Path
 
-from pitchtrack.pipeline import build_pipeline
 from pitchtrack.demo.manifest import (
     MissingDemoSourceError,
     load_demo_manifest,
@@ -14,6 +13,7 @@ from pitchtrack.demo.manifest import (
 from pitchtrack.demo.virtual_ptz import generate_demo_clip
 from pitchtrack.evaluation.benchmark import run_benchmark
 from pitchtrack.media import build_media_assets
+from pitchtrack.pipeline import build_pipeline
 from pitchtrack.schemas import CalibrationStatus
 from pitchtrack.testing.fixture import create_demo_fixture
 
@@ -145,4 +145,3 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     parser.print_help()
     return 0
-

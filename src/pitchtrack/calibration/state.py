@@ -19,4 +19,3 @@ class CalibrationStateConfig:
             raise ValueError("reinitialize_interval_frames must be positive")
         if self.max_anchor_disagreement <= 0:
             raise ValueError("max_anchor_disagreement must be positive")
-

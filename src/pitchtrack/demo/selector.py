@@ -67,12 +67,7 @@ def select_demo_interval(
     for start in range(len(frames) - window_size + 1):
         window = frames[start : start + window_size]
         passing = sum(_passes(frame, criteria) for frame in window) / window_size
-        heights = [
-            box.height
-            for frame in window
-            for box in frame.player_boxes
-            if box.height > 0
-        ]
+        heights = [box.height for frame in window for box in frame.player_boxes if box.height > 0]
         height = float(median(heights)) if heights else 0.0
         score = passing + min(len(window[0].player_boxes), 22) / 1000.0
         if passing >= criteria.min_passing_fraction and score > best_score:
@@ -86,4 +81,3 @@ def select_demo_interval(
     if best is None:
         raise ValueError("no continuous interval passes the configured visual gates")
     return best
-

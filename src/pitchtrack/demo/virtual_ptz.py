@@ -9,11 +9,11 @@ from typing import Any
 import cv2
 import numpy as np
 
-from pitchtrack.demo.selector import PlayerBox
 from pitchtrack.demo.manifest import DemoAssets, DemoManifest
 from pitchtrack.demo.selector import (
     ClipSelectionCriteria,
     FrameCandidate,
+    PlayerBox,
     select_demo_interval,
 )
 from pitchtrack.demo.soccertrack import (
@@ -196,9 +196,7 @@ def render_virtual_ptz_video(
         for output_index, window in enumerate(windows):
             ok, frame = capture.read()
             if not ok:
-                raise RuntimeError(
-                    f"Source ended before virtual PTZ frame {output_index}"
-                )
+                raise RuntimeError(f"Source ended before virtual PTZ frame {output_index}")
             x1 = int(round(window.x))
             y1 = int(round(window.y))
             x2 = int(round(window.x + window.width))
@@ -267,9 +265,7 @@ def _load_frame_candidates(
                 boxes.append(PlayerBox(x1, y1, x2, y2))
         candidates.append(
             FrameCandidate(
-                frame_index=int(
-                    frame.get("frame_index", frame.get("image_id", fallback_index))
-                ),
+                frame_index=int(frame.get("frame_index", frame.get("image_id", fallback_index))),
                 player_boxes=tuple(boxes),
                 line_visible=bool(frame.get("line_visible", True)),
                 lighting_score=float(frame.get("lighting_score", 1.0)),
@@ -307,9 +303,7 @@ def generate_demo_clip(
     selected = [
         candidate
         for candidate in candidates
-        if selection.start_frame
-        <= candidate.frame_index
-        < selection.end_frame_exclusive
+        if selection.start_frame <= candidate.frame_index < selection.end_frame_exclusive
     ]
     targets = [
         compute_target_window(
@@ -364,4 +358,3 @@ def generate_demo_clip(
         quality_path,
         attribution_path,
     )
-

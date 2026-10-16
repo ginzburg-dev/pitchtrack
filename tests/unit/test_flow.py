@@ -33,10 +33,7 @@ def test_optical_flow_tracks_pan_and_excludes_moving_mask() -> None:
     assert flow.count >= 12
     median_motion = np.median(flow.current_points_px - flow.previous_points_px, axis=0)
     np.testing.assert_allclose(median_motion, [4.0, 2.0], atol=0.35)
-    assert not np.any(
-        (flow.previous_points_px[:, 0] < 120)
-        & (flow.previous_points_px[:, 1] < 100)
-    )
+    assert not np.any((flow.previous_points_px[:, 0] < 120) & (flow.previous_points_px[:, 1] < 100))
 
 
 def test_ransac_interframe_motion_rejects_outliers() -> None:
@@ -76,4 +73,3 @@ def test_spatially_clustered_flow_is_invalid() -> None:
     assert not motion.valid
     assert motion.H_current_to_previous is None
     assert motion.reason == "insufficient_spatial_coverage"
-

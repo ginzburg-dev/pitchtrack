@@ -84,4 +84,3 @@ class VideoReader:
 
     def __exit__(self, exc_type: object, exc: object, traceback: object) -> None:
         self.close()
-

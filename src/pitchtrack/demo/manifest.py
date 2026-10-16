@@ -88,4 +88,3 @@ def resolve_soccertrack_assets(
             "No download was attempted by PitchTrack."
         )
     return DemoAssets(video.resolve(), annotations.resolve())
-

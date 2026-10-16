@@ -9,7 +9,6 @@ from pitchtrack.demo.manifest import (
     resolve_soccertrack_assets,
 )
 
-
 MANIFEST_PATH = Path("configs/demo/soccertrack-v2-117093.yaml")
 
 
@@ -50,4 +49,3 @@ def test_second_half_uses_english_ordinal_in_asset_paths(tmp_path: Path) -> None
     message = str(error.value)
     assert "117093_panorama_2nd_half.mp4" in message
     assert "117093_2nd.json" in message
-

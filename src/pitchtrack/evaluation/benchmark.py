@@ -50,17 +50,13 @@ def run_benchmark(
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
     destination = output / "metrics.json"
-    destination.write_text(
-        json.dumps(payload, indent=2, allow_nan=False), encoding="utf-8"
-    )
+    destination.write_text(json.dumps(payload, indent=2, allow_nan=False), encoding="utf-8")
     return destination
 
 
 def _virtual_ptz_metrics(path: Path) -> dict[str, Any]:
     records = [
-        json.loads(line)
-        for line in path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
+        json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
     ]
     if not records:
         raise ValueError("virtual-PTZ transform JSONL is empty")
@@ -74,9 +70,7 @@ def _virtual_ptz_metrics(path: Path) -> dict[str, Any]:
     for record in records:
         matrix = np.asarray(record.get("H_crop_to_source"), dtype=np.float64)
         valid_transforms += int(matrix.shape == (3, 3) and np.all(np.isfinite(matrix)))
-        x, y, width, height = (
-            float(value) for value in record["crop_window_source_px"]
-        )
+        x, y, width, height = (float(value) for value in record["crop_window_source_px"])
         centers.append((x + width / 2.0, y + height / 2.0))
         widths.append(width)
         pitch_presence.append(record.get("H_crop_to_pitch") is not None)
@@ -84,11 +78,7 @@ def _virtual_ptz_metrics(path: Path) -> dict[str, Any]:
         float(np.linalg.norm(np.asarray(right) - np.asarray(left)))
         for left, right in zip(centers, centers[1:])
     ]
-    zoom_steps = [
-        abs(right - left) / left
-        for left, right in zip(widths, widths[1:])
-        if left > 0
-    ]
+    zoom_steps = [abs(right - left) / left for left, right in zip(widths, widths[1:]) if left > 0]
     return {
         "frame_count": len(records),
         "transform_completeness": valid_transforms / len(records),

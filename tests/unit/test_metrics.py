@@ -32,9 +32,7 @@ def test_tolerant_jaccard_and_completeness_have_explicit_empty_semantics() -> No
 
 
 def test_reprojection_error_keeps_units_and_rejects_mixed_units() -> None:
-    metric = mean_reprojection_error(
-        [ReprojectionSample(1.0, "m"), ReprojectionSample(3.0, "m")]
-    )
+    metric = mean_reprojection_error([ReprojectionSample(1.0, "m"), ReprojectionSample(3.0, "m")])
     assert metric == {"value": 2.0, "unit": "m", "sample_count": 2}
     assert mean_reprojection_error([]) == {
         "value": None,
@@ -42,9 +40,7 @@ def test_reprojection_error_keeps_units_and_rejects_mixed_units() -> None:
         "sample_count": 0,
     }
     with pytest.raises(ValueError, match="mixed reprojection units"):
-        mean_reprojection_error(
-            [ReprojectionSample(1.0, "px"), ReprojectionSample(1.0, "m")]
-        )
+        mean_reprojection_error([ReprojectionSample(1.0, "px"), ReprojectionSample(1.0, "m")])
 
 
 def test_status_coverage_and_recovery_time() -> None:
@@ -67,9 +63,7 @@ def test_status_coverage_and_recovery_time() -> None:
 def test_smoothing_reduces_jitter_reports_lag_and_resets_on_invalid() -> None:
     smoother = PitchTrackSmoother(alpha=0.5)
     raw = [(0.0, 0.0), (1.0, 1.0), (2.0, 0.0), (3.0, 1.0)]
-    smoothed = [
-        smoother.update(7, point, CalibrationStatus.VALID) for point in raw
-    ]
+    smoothed = [smoother.update(7, point, CalibrationStatus.VALID) for point in raw]
 
     assert all(point is not None for point in smoothed)
     assert trajectory_jitter(smoothed) < trajectory_jitter(raw)

@@ -6,9 +6,8 @@ import numpy as np
 import pytest
 
 from pitchtrack.pipeline import build_fixture_pipeline
-from pitchtrack.schemas import CalibrationStatus, Detection, TrackObservation
 from pitchtrack.projection.projector import PitchProjector
-from pitchtrack.schemas import CalibrationResult
+from pitchtrack.schemas import CalibrationResult, CalibrationStatus, Detection, TrackObservation
 from pitchtrack.testing.fixture import create_demo_fixture
 from pitchtrack.video import VideoDecodeError, VideoFrame, VideoMetadata
 
@@ -48,9 +47,7 @@ def test_offline_pipeline_writes_synchronized_artifacts(tmp_path: Path) -> None:
     ]
     assert all(record["tracks"][0]["track_id"] == 1 for record in tracks)
     assert all(record["tracks"][0]["field_xy_m"] is not None for record in tracks)
-    assert all(
-        record["tracks"][0]["smoothed_field_xy_m"] is not None for record in tracks
-    )
+    assert all(record["tracks"][0]["smoothed_field_xy_m"] is not None for record in tracks)
 
     capture = cv2.VideoCapture(str(output_dir / "annotated.mp4"))
     assert capture.isOpened()

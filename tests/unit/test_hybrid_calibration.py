@@ -9,7 +9,6 @@ from pitchtrack.calibration.temporal import TemporalCalibrationConfig
 from pitchtrack.field_observation.base import FieldObservation
 from pitchtrack.schemas import CalibrationStatus
 
-
 WIDTH, HEIGHT = 320, 240
 IMAGE_POINTS = np.array(
     [[20.0, 20.0], [300.0, 20.0], [300.0, 220.0], [20.0, 220.0]],
@@ -103,4 +102,3 @@ def test_hybrid_calibration_expires_during_dropout_and_recovers_semantically() -
     assert predicted.status is CalibrationStatus.PREDICTED
     assert invalid.status is CalibrationStatus.INVALID
     assert recovered.status is CalibrationStatus.VALID
-

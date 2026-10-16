@@ -29,7 +29,11 @@ def draw_pitch(
         x_m, y_m = track.field_xy_m
         x = int(round(left + (x_m / pitch_width_m) * (right - left)))
         y = int(round(top + (y_m / pitch_height_m) * (bottom - top)))
-        color = (20, 210, 255) if 0 <= x_m <= pitch_width_m and 0 <= y_m <= pitch_height_m else (0, 80, 255)
+        color = (
+            (20, 210, 255)
+            if 0 <= x_m <= pitch_width_m and 0 <= y_m <= pitch_height_m
+            else (0, 80, 255)
+        )
         cv2.circle(canvas, (x, y), 5, color, -1)
         if track.track_id is not None:
             cv2.putText(
@@ -43,4 +47,3 @@ def draw_pitch(
                 cv2.LINE_AA,
             )
     return canvas
-

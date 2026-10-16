@@ -12,4 +12,3 @@ class ManualFieldObservationProvider:
     def observe(self, frame_bgr: np.ndarray) -> FieldObservation:
         del frame_bgr
         return self._observation
-

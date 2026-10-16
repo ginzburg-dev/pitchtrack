@@ -21,9 +21,7 @@ class ArtifactWriter:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self._tracks = (self.output_dir / "tracks.jsonl").open("w", encoding="utf-8")
-        self._calibration = (self.output_dir / "calibration.jsonl").open(
-            "w", encoding="utf-8"
-        )
+        self._calibration = (self.output_dir / "calibration.jsonl").open("w", encoding="utf-8")
         self._video = cv2.VideoWriter(
             str(self.output_dir / "annotated.mp4"),
             cv2.VideoWriter_fourcc(*"mp4v"),
@@ -73,4 +71,3 @@ class ArtifactWriter:
 
     def __exit__(self, exc_type: object, exc: object, traceback: object) -> None:
         self.close()
-

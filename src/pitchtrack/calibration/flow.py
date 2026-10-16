@@ -142,12 +142,7 @@ def track_static_features(
     height, width = previous_gray.shape
     current_x = np.rint(current_flat[:, 0]).astype(int)
     current_y = np.rint(current_flat[:, 1]).astype(int)
-    inside = (
-        (current_x >= 0)
-        & (current_x < width)
-        & (current_y >= 0)
-        & (current_y < height)
-    )
+    inside = (current_x >= 0) & (current_x < width) & (current_y >= 0) & (current_y < height)
     current_allowed = np.zeros(len(points), dtype=bool)
     current_allowed[inside] = ~excluded[current_y[inside], current_x[inside]]
     keep = (
@@ -179,9 +174,7 @@ def estimate_interframe_motion(
         return InterframeMotion.invalid("insufficient_flow_points")
     coverage = _coverage(correspondences.previous_points_px, frame_size_px)
     if coverage < config.min_spatial_coverage:
-        return InterframeMotion.invalid(
-            "insufficient_spatial_coverage", spatial_coverage=coverage
-        )
+        return InterframeMotion.invalid("insufficient_spatial_coverage", spatial_coverage=coverage)
     matrix, mask = cv2.findHomography(
         correspondences.current_points_px,
         correspondences.previous_points_px,
@@ -189,13 +182,9 @@ def estimate_interframe_motion(
         config.ransac_reprojection_threshold,
     )
     if matrix is None or mask is None or not np.all(np.isfinite(matrix)):
-        return InterframeMotion.invalid(
-            "motion_estimation_failed", spatial_coverage=coverage
-        )
+        return InterframeMotion.invalid("motion_estimation_failed", spatial_coverage=coverage)
     if abs(float(matrix[2, 2])) < 1e-12:
-        return InterframeMotion.invalid(
-            "motion_normalization_failed", spatial_coverage=coverage
-        )
+        return InterframeMotion.invalid("motion_normalization_failed", spatial_coverage=coverage)
     matrix = matrix / matrix[2, 2]
     inliers = mask.reshape(-1).astype(bool)
     inlier_ratio = float(np.mean(inliers))
@@ -219,4 +208,3 @@ def estimate_interframe_motion(
         reprojection_error,
         coverage,
     )
-

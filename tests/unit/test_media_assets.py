@@ -53,7 +53,9 @@ def make_run(path: Path, *, source_kind: str, include_failure: bool = True) -> N
 
 
 def test_window_selection_finds_camera_change_and_invalid_transition() -> None:
-    records = [calibration(i, 15.0 if i >= 6 else 0.0, "invalid" if i == 9 else "valid") for i in range(12)]
+    records = [
+        calibration(i, 15.0 if i >= 6 else 0.0, "invalid" if i == 9 else "valid") for i in range(12)
+    ]
 
     dynamic = select_dynamic_window(records, fps=2.0, duration_s=3.0)
     failure = select_failure_window(records, fps=2.0, duration_s=3.0)

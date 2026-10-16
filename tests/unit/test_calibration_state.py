@@ -18,4 +18,3 @@ def test_state_config_requires_strict_decay() -> None:
             assert "between" in str(exc)
         else:
             raise AssertionError(f"decay {value} must be rejected")
-

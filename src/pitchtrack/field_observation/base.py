@@ -55,4 +55,3 @@ class FieldObservation:
 @runtime_checkable
 class FieldObservationProvider(Protocol):
     def observe(self, frame_bgr: np.ndarray) -> FieldObservation: ...
-

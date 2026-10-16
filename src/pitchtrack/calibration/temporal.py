@@ -40,8 +40,7 @@ class TemporalCalibrationManager:
         if self._last_valid_frame is None:
             return True
         return (
-            frame_index - self._last_valid_frame
-            >= self.config.state.reinitialize_interval_frames
+            frame_index - self._last_valid_frame >= self.config.state.reinitialize_interval_frames
         )
 
     def update(
@@ -68,7 +67,11 @@ class TemporalCalibrationManager:
             )
             if candidate.status is CalibrationStatus.VALID:
                 reference = self._candidate_reference(propagated)
-                if reference is not None and self._anchor_disagreement(candidate, reference) > self.config.state.max_anchor_disagreement:
+                if (
+                    reference is not None
+                    and self._anchor_disagreement(candidate, reference)
+                    > self.config.state.max_anchor_disagreement
+                ):
                     self._current = self._predict(
                         frame_index,
                         propagated,
@@ -83,9 +86,7 @@ class TemporalCalibrationManager:
         self._current = self._predict(frame_index, propagated, reason="observation_missing")
         return self._current
 
-    def _usable_reference(
-        self, propagated: CalibrationResult | None
-    ) -> CalibrationResult | None:
+    def _usable_reference(self, propagated: CalibrationResult | None) -> CalibrationResult | None:
         if propagated is not None and propagated.H_img_to_pitch is not None:
             return propagated
         return self._last_valid

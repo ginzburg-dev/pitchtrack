@@ -45,9 +45,7 @@ def tolerant_jaccard(
         else 0.0
     )
     recall = (
-        float(np.count_nonzero(truth & prediction_region)) / target_count
-        if target_count
-        else 0.0
+        float(np.count_nonzero(truth & prediction_region)) / target_count if target_count else 0.0
     )
     return min(precision, recall)
 

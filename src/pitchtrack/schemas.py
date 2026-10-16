@@ -143,9 +143,7 @@ class TrackObservation:
 
     def __post_init__(self) -> None:
         if self.field_xy_m is not None:
-            object.__setattr__(
-                self, "field_xy_m", _finite_tuple(self.field_xy_m, "field_xy_m")
-            )
+            object.__setattr__(self, "field_xy_m", _finite_tuple(self.field_xy_m, "field_xy_m"))
         if self.smoothed_field_xy_m is not None:
             object.__setattr__(
                 self,
@@ -164,9 +162,7 @@ class TrackObservation:
                 "track_id": self.track_id,
                 "field_xy_m": list(self.field_xy_m) if self.field_xy_m is not None else None,
                 "smoothed_field_xy_m": (
-                    list(self.smoothed_field_xy_m)
-                    if self.smoothed_field_xy_m is not None
-                    else None
+                    list(self.smoothed_field_xy_m) if self.smoothed_field_xy_m is not None else None
                 ),
             }
         )
@@ -193,4 +189,3 @@ class FrameResult:
             "tracks": [track.to_dict() for track in self.tracks],
             "calibration": self.calibration.to_dict(),
         }
-

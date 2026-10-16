@@ -76,4 +76,3 @@ def test_non_finite_schema_values_are_rejected() -> None:
         assert "finite" in str(exc)
     else:
         raise AssertionError("non-finite bounding box must be rejected")
-

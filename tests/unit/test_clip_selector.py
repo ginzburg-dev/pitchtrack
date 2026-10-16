@@ -45,4 +45,3 @@ def test_selector_rejects_when_no_window_passes_player_scale_gate() -> None:
         assert "visual gates" in str(exc)
     else:
         raise AssertionError("a clip with tiny players must not be selected")
-

@@ -81,9 +81,7 @@ class ByteTrackAdapter:
 def _iou(left: Detection, right: Detection) -> float:
     ax1, ay1, ax2, ay2 = left.bbox_xyxy_px
     bx1, by1, bx2, by2 = right.bbox_xyxy_px
-    intersection = max(0.0, min(ax2, bx2) - max(ax1, bx1)) * max(
-        0.0, min(ay2, by2) - max(ay1, by1)
-    )
+    intersection = max(0.0, min(ax2, bx2) - max(ax1, bx1)) * max(0.0, min(ay2, by2) - max(ay1, by1))
     left_area = max(0.0, ax2 - ax1) * max(0.0, ay2 - ay1)
     right_area = max(0.0, bx2 - bx1) * max(0.0, by2 - by1)
     union = left_area + right_area - intersection

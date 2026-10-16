@@ -7,7 +7,6 @@ from pitchtrack.calibration.geometry import (
 )
 from pitchtrack.schemas import CalibrationStatus
 
-
 IMAGE_POINTS = np.array(
     [[100.0, 100.0], [500.0, 100.0], [500.0, 300.0], [100.0, 300.0]],
     dtype=np.float64,
@@ -84,4 +83,3 @@ def test_project_points_rejects_non_finite_homography() -> None:
         assert "finite" in str(exc)
     else:
         raise AssertionError("non-finite homography must be rejected")
-

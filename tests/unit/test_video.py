@@ -33,9 +33,7 @@ def test_video_reader_emits_ordered_frames_and_timestamps(tmp_path: Path) -> Non
     assert metadata.width == 64
     assert metadata.height == 48
     assert [frame.frame_index for frame in frames] == [0, 1, 2, 3, 4]
-    assert [frame.timestamp_s for frame in frames] == pytest.approx(
-        [0.0, 0.1, 0.2, 0.3, 0.4]
-    )
+    assert [frame.timestamp_s for frame in frames] == pytest.approx([0.0, 0.1, 0.2, 0.3, 0.4])
 
 
 def test_video_reader_rejects_missing_input(tmp_path: Path) -> None:
@@ -49,4 +47,3 @@ def test_video_reader_rejects_undecodable_file(tmp_path: Path) -> None:
 
     with pytest.raises(VideoOpenError, match="Could not open video"):
         VideoReader(bad_path)
-

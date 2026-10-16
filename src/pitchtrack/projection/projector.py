@@ -28,4 +28,3 @@ class PitchProjector:
             field_xy_m=field_xy_m,
             smoothed_field_xy_m=track.smoothed_field_xy_m,
         )
-

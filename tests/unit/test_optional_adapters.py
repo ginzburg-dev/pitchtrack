@@ -4,10 +4,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pitchtrack.field_observation.deeplab import DeepLabFieldObserver
-from pitchtrack.field_observation.tvcalib import TVCalibFieldObserver
 from pitchtrack.calibration.geometry import HomographyConfig
 from pitchtrack.field_observation.base import FieldObservation
+from pitchtrack.field_observation.deeplab import DeepLabFieldObserver
+from pitchtrack.field_observation.tvcalib import TVCalibFieldObserver
 from pitchtrack.pipeline import FieldCalibrationSource, moving_object_mask
 from pitchtrack.schemas import CalibrationStatus, Detection
 

@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 
 from pitchtrack.calibration.geometry import project_points
+from pitchtrack.demo.manifest import DemoAssets, DemoManifest
 from pitchtrack.demo.selector import PlayerBox
 from pitchtrack.demo.virtual_ptz import (
     CropWindow,
@@ -15,7 +16,6 @@ from pitchtrack.demo.virtual_ptz import (
     render_virtual_ptz_video,
     smooth_crop_windows,
 )
-from pitchtrack.demo.manifest import DemoAssets, DemoManifest
 
 
 def test_crop_transform_maps_output_corners_to_source_window() -> None:
@@ -33,9 +33,7 @@ def test_crop_transform_maps_output_corners_to_source_window() -> None:
 def test_crop_to_pitch_composition_matches_two_step_projection() -> None:
     window = CropWindow(x=100.0, y=50.0, width=800.0, height=450.0)
     crop_to_source = crop_to_source_homography(window, (1920, 1080))
-    source_to_pitch = np.array(
-        [[0.1, 0.0, -2.0], [0.0, 0.1, 3.0], [0.0, 0.0, 1.0]]
-    )
+    source_to_pitch = np.array([[0.1, 0.0, -2.0], [0.0, 0.1, 3.0], [0.0, 0.0, 1.0]])
     points = np.array([[100.0, 200.0], [1000.0, 500.0]])
 
     composed = compose_crop_to_pitch(source_to_pitch, crop_to_source)
@@ -91,9 +89,7 @@ def test_renderer_writes_output_frames_and_aligned_transform_jsonl(
     tmp_path: Path,
 ) -> None:
     source = tmp_path / "source.mp4"
-    writer = cv2.VideoWriter(
-        str(source), cv2.VideoWriter_fourcc(*"mp4v"), 10.0, (320, 180)
-    )
+    writer = cv2.VideoWriter(str(source), cv2.VideoWriter_fourcc(*"mp4v"), 10.0, (320, 180))
     assert writer.isOpened()
     for value in (30, 80, 130):
         writer.write(np.full((180, 320, 3), value, dtype=np.uint8))
@@ -126,9 +122,7 @@ def test_generate_demo_clip_writes_quality_and_attribution_reports(
     tmp_path: Path,
 ) -> None:
     source = tmp_path / "source.mp4"
-    writer = cv2.VideoWriter(
-        str(source), cv2.VideoWriter_fourcc(*"mp4v"), 10.0, (320, 180)
-    )
+    writer = cv2.VideoWriter(str(source), cv2.VideoWriter_fourcc(*"mp4v"), 10.0, (320, 180))
     assert writer.isOpened()
     annotations = []
     for index in range(4):

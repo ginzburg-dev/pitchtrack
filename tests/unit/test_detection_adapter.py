@@ -31,4 +31,3 @@ def test_detector_requires_local_weights_and_never_downloads(tmp_path: Path) -> 
 
     with pytest.raises(FileNotFoundError, match="local weights"):
         UltralyticsPersonDetector(model_path=missing)
-

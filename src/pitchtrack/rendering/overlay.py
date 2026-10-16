@@ -47,4 +47,3 @@ def render_annotated_frame(
     panel_width = max(240, int(round(annotated.shape[0] * 1.5)))
     pitch = draw_pitch(tracks, width=panel_width, height=annotated.shape[0])
     return np.concatenate([annotated, pitch], axis=1)
-

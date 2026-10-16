@@ -7,12 +7,8 @@ from pitchtrack.field_observation.manual import ManualFieldObservationProvider
 
 def observation() -> FieldObservation:
     return FieldObservation(
-        image_points_px=np.array(
-            [[10.0, 10.0], [90.0, 10.0], [90.0, 90.0], [10.0, 90.0]]
-        ),
-        pitch_points_m=np.array(
-            [[0.0, 0.0], [105.0, 0.0], [105.0, 68.0], [0.0, 68.0]]
-        ),
+        image_points_px=np.array([[10.0, 10.0], [90.0, 10.0], [90.0, 90.0], [10.0, 90.0]]),
+        pitch_points_m=np.array([[0.0, 0.0], [105.0, 0.0], [105.0, 68.0], [0.0, 68.0]]),
         confidences=np.array([0.9, 0.8, 0.9, 0.8]),
         source="manual-test",
     )
@@ -43,4 +39,3 @@ def test_observation_rejects_mismatched_correspondence_counts() -> None:
             confidences=np.ones(4),
             source="broken",
         )
-

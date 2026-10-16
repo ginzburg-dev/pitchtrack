@@ -40,9 +40,7 @@ def select_failure_window(
     return None
 
 
-def _centered_window(
-    center: int, total: int, fps: float, duration_s: float
-) -> FrameWindow:
+def _centered_window(center: int, total: int, fps: float, duration_s: float) -> FrameWindow:
     count = max(1, min(total, int(round(fps * duration_s))))
     start = min(max(0, center - count // 2), total - count)
     return FrameWindow(start, start + count)

@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 BG = "#ffffff"
 PANEL = "#f6f8fa"
 BORDER = "#d0d7de"
@@ -65,7 +64,7 @@ def render_benchmark_svg(metrics_path: str | Path, path: str | Path) -> Path:
         ("Offline throughput", _number(metrics.get("throughput_fps"), " FPS")),
         (
             "Calibration status",
-            f'{status.get("valid", 0)} valid / {status.get("predicted", 0)} predicted / {status.get("invalid", 0)} invalid',
+            f"{status.get('valid', 0)} valid / {status.get('predicted', 0)} predicted / {status.get('invalid', 0)} invalid",
         ),
         ("Dropped frames", str(metrics.get("dropped_frames", "pending"))),
         ("Official JaC@5", "pending"),
@@ -82,7 +81,9 @@ def render_benchmark_svg(metrics_path: str | Path, path: str | Path) -> Path:
     y = 116
     for label, value in rows:
         body.append(_text(48, y, label, 13, color=MUTED))
-        body.append(_text(520, y, value, 13, weight=600, color=ACCENT if value == "pending" else TEXT))
+        body.append(
+            _text(520, y, value, 13, weight=600, color=ACCENT if value == "pending" else TEXT)
+        )
         body.append(f'<line x1="36" y1="{y + 17}" x2="864" y2="{y + 17}" stroke="{BORDER}"/>')
         y += 42
     body.append(_text(36, 414, f"Input SHA-256: {digest}", 10, color=MUTED))
@@ -120,9 +121,7 @@ def _write_svg(
     destination.parent.mkdir(parents=True, exist_ok=True)
     content = (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">'
-        f'<metadata>{html.escape(metadata)}</metadata>'
-        + "".join(body)
-        + "</svg>"
+        f"<metadata>{html.escape(metadata)}</metadata>" + "".join(body) + "</svg>"
     )
     destination.write_text(content, encoding="utf-8")
     return destination

@@ -102,9 +102,7 @@ def _entity(annotation: dict[str, Any]) -> AnnotatedEntity | None:
     pitch_x = pitch.get("x_bottom_middle")
     pitch_y = pitch.get("y_bottom_middle")
     pitch_xy = (
-        (float(pitch_x), float(pitch_y))
-        if pitch_x is not None and pitch_y is not None
-        else None
+        (float(pitch_x), float(pitch_y)) if pitch_x is not None and pitch_y is not None else None
     )
     attributes = annotation.get("attributes") or {}
     return AnnotatedEntity(

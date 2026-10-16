@@ -87,4 +87,3 @@ def create_demo_fixture(
     config_path = output / "config.yaml"
     config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
     return FixturePaths(video_path=video_path, config_path=config_path)
-

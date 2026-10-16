@@ -43,10 +43,7 @@ class HybridTemporalCalibrator:
         frame_index: int,
     ) -> CalibrationResult:
         propagated: CalibrationResult | None = None
-        if (
-            self._previous_frame is not None
-            and self._previous_result.H_img_to_pitch is not None
-        ):
+        if self._previous_frame is not None and self._previous_result.H_img_to_pitch is not None:
             flow = track_static_features(
                 self._previous_frame,
                 frame_bgr,
@@ -60,10 +57,7 @@ class HybridTemporalCalibrator:
                 config=self.config.flow,
             )
             if motion.valid and motion.H_current_to_previous is not None:
-                matrix = (
-                    self._previous_result.H_img_to_pitch
-                    @ motion.H_current_to_previous
-                )
+                matrix = self._previous_result.H_img_to_pitch @ motion.H_current_to_previous
                 matrix = matrix / matrix[2, 2]
                 diagnostics = CalibrationDiagnostics(
                     inlier_ratio=motion.inlier_ratio,
@@ -99,4 +93,3 @@ class HybridTemporalCalibrator:
         self._previous_frame = frame_bgr.copy()
         self._previous_result = result
         return result
-

@@ -64,9 +64,7 @@ def project_points(points_px: np.ndarray, H_img_to_pitch: np.ndarray) -> np.ndar
     matrix = np.asarray(H_img_to_pitch, dtype=np.float64)
     if matrix.shape != (3, 3) or not np.all(np.isfinite(matrix)):
         raise ValueError("H_img_to_pitch must be a finite 3x3 matrix")
-    projected = cv2.perspectiveTransform(
-        points.reshape(-1, 1, 2), matrix
-    ).reshape(-1, 2)
+    projected = cv2.perspectiveTransform(points.reshape(-1, 1, 2), matrix).reshape(-1, 2)
     if not np.all(np.isfinite(projected)):
         raise ValueError("projected points are not finite")
     return projected

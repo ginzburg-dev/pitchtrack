@@ -73,4 +73,3 @@ class HybridFixtureCalibrationSource:
             observation,
             frame_index=frame_index,
         )
-

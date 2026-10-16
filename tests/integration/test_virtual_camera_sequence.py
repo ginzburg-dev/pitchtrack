@@ -28,8 +28,7 @@ def test_virtual_camera_fixture_emits_changing_accurate_homographies(
     config = yaml.safe_load(fixture.config_path.read_text("utf-8"))
     expected_h = [np.asarray(value) for value in config["ground_truth_H_img_to_pitch"]]
     actual_records = [
-        json.loads(line)
-        for line in (output / "calibration.jsonl").read_text("utf-8").splitlines()
+        json.loads(line) for line in (output / "calibration.jsonl").read_text("utf-8").splitlines()
     ]
     actual_h = [np.asarray(record["H_img_to_pitch"]) for record in actual_records]
     anchors = np.array([[60.0, 60.0], [160.0, 100.0], [260.0, 140.0]])

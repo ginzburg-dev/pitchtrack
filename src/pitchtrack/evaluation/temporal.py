@@ -14,8 +14,7 @@ def status_coverage(
         return {status.value: None for status in CalibrationStatus}
     normalized = [CalibrationStatus(status) for status in statuses]
     return {
-        status.value: normalized.count(status) / len(normalized)
-        for status in CalibrationStatus
+        status.value: normalized.count(status) / len(normalized) for status in CalibrationStatus
     }
 
 
@@ -33,9 +32,7 @@ def calibration_recovery(
             failure_start = None
     return {
         "recovery_frames": recoveries,
-        "mean_recovery_frames": (
-            float(np.mean(recoveries)) if recoveries else None
-        ),
+        "mean_recovery_frames": (float(np.mean(recoveries)) if recoveries else None),
         "unresolved_failures": int(failure_start is not None),
     }
 
@@ -62,7 +59,10 @@ def response_lag_frames(
             return None
         origin = np.asarray(points[0], dtype=np.float64)
         for index, point in enumerate(points):
-            if point is not None and np.linalg.norm(np.asarray(point) - origin) >= movement_threshold:
+            if (
+                point is not None
+                and np.linalg.norm(np.asarray(point) - origin) >= movement_threshold
+            ):
                 return index
         return None
 

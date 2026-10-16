@@ -22,13 +22,15 @@ from pitchtrack.calibration.hybrid import HybridCalibrationConfig, HybridTempora
 from pitchtrack.calibration.state import CalibrationStateConfig
 from pitchtrack.calibration.temporal import TemporalCalibrationConfig
 from pitchtrack.detection.ultralytics import UltralyticsPersonDetector
+from pitchtrack.evaluation.performance import (
+    dropped_frames as count_dropped_frames,
+)
+from pitchtrack.evaluation.performance import (
+    summarize_stage_latencies,
+)
 from pitchtrack.field_observation.base import FieldObservation, FieldObservationProvider
 from pitchtrack.field_observation.deeplab import DeepLabFieldObserver
 from pitchtrack.field_observation.tvcalib import TVCalibFieldObserver
-from pitchtrack.evaluation.performance import (
-    dropped_frames as count_dropped_frames,
-    summarize_stage_latencies,
-)
 from pitchtrack.projection.projector import PitchProjector
 from pitchtrack.projection.smoothing import PitchTrackSmoother
 from pitchtrack.rendering.overlay import render_annotated_frame
@@ -70,9 +72,7 @@ class CalibrationSource(Protocol):
     ) -> CalibrationResult: ...
 
 
-def moving_object_mask(
-    frame_shape: tuple[int, int], detections: Sequence[Detection]
-) -> np.ndarray:
+def moving_object_mask(frame_shape: tuple[int, int], detections: Sequence[Detection]) -> np.ndarray:
     height, width = frame_shape
     mask = np.zeros((height, width), dtype=np.uint8)
     for detection in detections:
@@ -172,8 +172,7 @@ class OfflinePipeline:
         output_dir = Path(output_dir)
         status_counts: Counter[str] = Counter()
         stage_seconds: dict[str, list[float]] = {
-            stage: []
-            for stage in ("detect", "track", "calibrate", "project", "render", "write")
+            stage: [] for stage in ("detect", "track", "calibrate", "project", "render", "write")
         }
         frames_processed = 0
         with self.reader_factory(video_path) as reader:
@@ -190,21 +189,16 @@ class OfflinePipeline:
                     detections = tuple(self.detector.detect(frame.image_bgr))
                     stage_seconds["detect"].append(time.perf_counter() - stage_started)
                     stage_started = time.perf_counter()
-                    image_tracks = tuple(
-                        self.tracker.update(detections, frame.image_bgr)
-                    )
+                    image_tracks = tuple(self.tracker.update(detections, frame.image_bgr))
                     stage_seconds["track"].append(time.perf_counter() - stage_started)
                     stage_started = time.perf_counter()
                     calibration = self.calibrator.update(
                         frame.image_bgr, frame.frame_index, detections
                     )
-                    stage_seconds["calibrate"].append(
-                        time.perf_counter() - stage_started
-                    )
+                    stage_seconds["calibrate"].append(time.perf_counter() - stage_started)
                     stage_started = time.perf_counter()
                     raw_tracks = tuple(
-                        self.projector.project(track, calibration)
-                        for track in image_tracks
+                        self.projector.project(track, calibration) for track in image_tracks
                     )
                     if calibration.status is CalibrationStatus.INVALID:
                         self.smoother.reset()
@@ -394,13 +388,9 @@ def build_model_pipeline(
         else calibration_mode
     )
     if observer_mode == "baseline_deeplab":
-        observer = DeepLabFieldObserver(
-            local_path(calibration_config["deeplab_weights"])
-        )
+        observer = DeepLabFieldObserver(local_path(calibration_config["deeplab_weights"]))
     elif observer_mode == "baseline_tvcalib":
-        observer = TVCalibFieldObserver(
-            local_path(calibration_config["tvcalib_weights"])
-        )
+        observer = TVCalibFieldObserver(local_path(calibration_config["tvcalib_weights"]))
     else:
         raise ValueError(f"unsupported field observer: {observer_mode}")
     width, height = (int(value) for value in config["video"]["image_size_px"])
@@ -410,30 +400,22 @@ def build_model_pipeline(
             calibration_config.get("ransac_reprojection_threshold", 3.0)
         ),
         min_inlier_ratio=float(calibration_config.get("min_inlier_ratio", 0.5)),
-        min_spatial_coverage=float(
-            calibration_config.get("min_spatial_coverage", 0.01)
-        ),
-        max_reprojection_error=float(
-            calibration_config.get("max_reprojection_error", 5.0)
-        ),
+        min_spatial_coverage=float(calibration_config.get("min_spatial_coverage", 0.01)),
+        max_reprojection_error=float(calibration_config.get("max_reprojection_error", 5.0)),
     )
     source = FieldCalibrationSource(
         calibration_mode,
         observer,
         homography,
         state=CalibrationStateConfig(
-            max_prediction_age_frames=int(
-                calibration_config.get("max_prediction_age_frames", 15)
-            ),
+            max_prediction_age_frames=int(calibration_config.get("max_prediction_age_frames", 15)),
             prediction_confidence_decay=float(
                 calibration_config.get("prediction_confidence_decay", 0.9)
             ),
             reinitialize_interval_frames=int(
                 calibration_config.get("reinitialize_interval_frames", 30)
             ),
-            max_anchor_disagreement=float(
-                calibration_config.get("max_anchor_disagreement", 5.0)
-            ),
+            max_anchor_disagreement=float(calibration_config.get("max_anchor_disagreement", 5.0)),
         ),
     )
     return OfflinePipeline(
@@ -465,4 +447,3 @@ def build_pipeline(
         calibration_mode=calibration_mode,
         reader_factory=reader_factory,
     )
-

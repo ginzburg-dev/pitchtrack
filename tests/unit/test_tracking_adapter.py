@@ -3,7 +3,6 @@ import numpy as np
 from pitchtrack.schemas import Detection
 from pitchtrack.tracking.bytetrack import ByteTrackAdapter, ByteTrackConfig
 
-
 FRAME = np.zeros((100, 160, 3), dtype=np.uint8)
 
 
@@ -39,4 +38,3 @@ def test_tracker_never_emits_missing_ids() -> None:
 
     assert all(track.track_id is not None for track in tracks)
     assert len({track.track_id for track in tracks}) == 2
-
