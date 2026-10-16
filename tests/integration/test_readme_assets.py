@@ -36,3 +36,12 @@ def test_readme_is_github_native_and_contains_no_unsupported_demo_claim() -> Non
     assert "assets/demo-overview.gif" not in readme
     assert "verified local results" not in readme
     assert "evidence status" not in readme
+
+
+def test_architecture_diagram_keeps_only_the_primary_pipeline() -> None:
+    diagram = (ROOT / "assets/architecture.svg").read_text(encoding="utf-8").lower()
+
+    assert "valid" not in diagram
+    assert "predicted" not in diagram
+    assert "invalid" not in diagram
+    assert "implemented modules" not in diagram

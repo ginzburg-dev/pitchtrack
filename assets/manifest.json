@@ -4,8 +4,8 @@
   "assets": [
     {
       "name": "architecture.svg",
-      "bytes": 4829,
-      "sha256": "e121b332812217027ffd965158243b3b37aa233dc4c30df9cafa4146eae74c7a",
+      "bytes": 2801,
+      "sha256": "615b79f3febf0efda1045243440800ad3d3406b8960134c0b5384c7a702b8eed",
       "source_kind": "repository-architecture"
     },
     {
