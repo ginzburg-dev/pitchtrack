@@ -20,6 +20,7 @@ def build_parser() -> argparse.ArgumentParser:
         "demo-fixture", help="Create a deterministic synthetic geometry fixture."
     )
     fixture_parser.add_argument("--out", required=True, type=Path)
+    fixture_parser.add_argument("--camera-pan-px-per-frame", type=float, default=0.0)
 
     analyze_parser = subparsers.add_parser(
         "analyze", help="Analyze one continuous video shot offline."
@@ -39,17 +40,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     if args.command == "demo-fixture":
-        paths = create_demo_fixture(args.out, calibration_status=CalibrationStatus.VALID)
+        paths = create_demo_fixture(
+            args.out,
+            calibration_status=CalibrationStatus.VALID,
+            camera_pan_px_per_frame=args.camera_pan_px_per_frame,
+        )
         print(f"video={paths.video_path}")
         print(f"config={paths.config_path}")
         return 0
     if args.command == "analyze":
-        if args.calibration_mode != "fixture":
+        if args.calibration_mode not in {"fixture", "hybrid_temporal"}:
             parser.error(
                 f"calibration mode {args.calibration_mode!r} is not available yet; "
                 "use 'fixture' in the current milestone"
             )
-        summary = build_fixture_pipeline(args.config).run(args.video, args.out)
+        summary = build_fixture_pipeline(
+            args.config,
+            calibration_mode=args.calibration_mode,
+        ).run(args.video, args.out)
         print(f"frames_processed={summary.frames_processed}")
         print(f"output={summary.output_dir}")
         return 0

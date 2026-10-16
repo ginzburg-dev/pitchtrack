@@ -67,7 +67,7 @@ class TemporalCalibrationManager:
                 self.config.homography,
             )
             if candidate.status is CalibrationStatus.VALID:
-                reference = self._usable_reference(propagated)
+                reference = self._candidate_reference(propagated)
                 if reference is not None and self._anchor_disagreement(candidate, reference) > self.config.state.max_anchor_disagreement:
                     self._current = self._predict(
                         frame_index,
@@ -89,6 +89,17 @@ class TemporalCalibrationManager:
         if propagated is not None and propagated.H_img_to_pitch is not None:
             return propagated
         return self._last_valid
+
+    def _candidate_reference(
+        self, propagated: CalibrationResult | None
+    ) -> CalibrationResult | None:
+        if propagated is not None and propagated.H_img_to_pitch is not None:
+            return propagated
+        if self._current.status is CalibrationStatus.INVALID:
+            return None
+        if self._current.H_img_to_pitch is not None:
+            return self._current
+        return None
 
     def _predict(
         self,

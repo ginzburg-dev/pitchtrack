@@ -16,7 +16,12 @@ import yaml
 
 from pitchtrack import __version__
 from pitchtrack.artifacts import ArtifactWriter
+from pitchtrack.calibration.flow import OpticalFlowConfig
 from pitchtrack.calibration.geometry import HomographyConfig, estimate_homography
+from pitchtrack.calibration.hybrid import HybridCalibrationConfig, HybridTemporalCalibrator
+from pitchtrack.calibration.state import CalibrationStateConfig
+from pitchtrack.calibration.temporal import TemporalCalibrationConfig
+from pitchtrack.field_observation.base import FieldObservation
 from pitchtrack.projection.projector import PitchProjector
 from pitchtrack.rendering.overlay import render_annotated_frame
 from pitchtrack.schemas import (
@@ -26,7 +31,12 @@ from pitchtrack.schemas import (
     FrameResult,
     TrackObservation,
 )
-from pitchtrack.testing.mocks import ScriptedDetector, StableSlotTracker, StaticCalibrator
+from pitchtrack.testing.mocks import (
+    HybridFixtureCalibrationSource,
+    ScriptedDetector,
+    StableSlotTracker,
+    StaticCalibrator,
+)
 from pitchtrack.video import VideoReader
 
 
@@ -43,7 +53,12 @@ class ImageSpaceTracker(Protocol):
 
 
 class CalibrationSource(Protocol):
-    def update(self, frame_bgr: np.ndarray, frame_index: int) -> CalibrationResult: ...
+    def update(
+        self,
+        frame_bgr: np.ndarray,
+        frame_index: int,
+        detections: Sequence[Detection] = (),
+    ) -> CalibrationResult: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,7 +106,7 @@ class OfflinePipeline:
                         self.tracker.update(detections, frame.image_bgr)
                     )
                     calibration = self.calibrator.update(
-                        frame.image_bgr, frame.frame_index
+                        frame.image_bgr, frame.frame_index, detections
                     )
                     projected_tracks = tuple(
                         self.projector.project(track, calibration)
@@ -151,6 +166,7 @@ def _sha256(path: Path) -> str:
 def build_fixture_pipeline(
     config_path: str | Path,
     *,
+    calibration_mode: str = "fixture",
     reader_factory: Callable[[Path], VideoReader] = VideoReader,
 ) -> OfflinePipeline:
     path = Path(config_path)
@@ -161,8 +177,42 @@ def build_fixture_pipeline(
     tracker = StableSlotTracker()
     calibration_config = config["calibration"]
     status = CalibrationStatus(calibration_config["status"])
-    if status is CalibrationStatus.INVALID:
+    if calibration_mode == "hybrid_temporal":
+        video = config["video"]
+        homography = HomographyConfig(
+            image_size_px=(int(video["width"]), int(video["height"])),
+            min_spatial_coverage=0.1,
+            max_reprojection_error=0.01,
+        )
+        temporal = TemporalCalibrationConfig(
+            homography=homography,
+            state=CalibrationStateConfig(
+                max_prediction_age_frames=15,
+                prediction_confidence_decay=0.9,
+                reinitialize_interval_frames=30,
+                max_anchor_disagreement=8.0,
+            ),
+        )
+        hybrid = HybridTemporalCalibrator(
+            HybridCalibrationConfig(
+                temporal=temporal,
+                flow=OpticalFlowConfig(
+                    max_corners=400,
+                    min_points=8,
+                    min_spatial_coverage=0.05,
+                ),
+            )
+        )
+        first_observation = FieldObservation(
+            image_points_px=np.asarray(calibration_config["image_points_px"]),
+            pitch_points_m=np.asarray(calibration_config["pitch_points_m"]),
+            confidences=np.ones(len(calibration_config["image_points_px"])),
+            source="fixture-landmarks",
+        )
+        calibrator = HybridFixtureCalibrationSource(hybrid, first_observation)
+    elif status is CalibrationStatus.INVALID:
         calibration = CalibrationResult.invalid(calibration_config["reason"])
+        calibrator = StaticCalibrator(calibration)
     else:
         image_points = np.asarray(calibration_config["image_points_px"], dtype=np.float64)
         pitch_points = np.asarray(calibration_config["pitch_points_m"], dtype=np.float64)
@@ -177,10 +227,11 @@ def build_fixture_pipeline(
                 max_reprojection_error=0.01,
             ),
         )
+        calibrator = StaticCalibrator(calibration)
     return OfflinePipeline(
         detector,
         tracker,
-        StaticCalibrator(calibration),
+        calibrator,
         config_path=path,
         reader_factory=reader_factory,
     )
