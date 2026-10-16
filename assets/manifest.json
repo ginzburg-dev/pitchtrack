@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "source_kind": "repository-assets",
+  "assets": [
+    {
+      "name": "architecture.svg",
+      "bytes": 4829,
+      "sha256": "e121b332812217027ffd965158243b3b37aa233dc4c30df9cafa4146eae74c7a",
+      "source_kind": "repository-architecture"
+    },
+    {
+      "name": "benchmark.svg",
+      "bytes": 3468,
+      "sha256": "32e13fca8b1ef9ef0949278f6e052942d92f5e9cfab05d9d7bce2a3af7634f03",
+      "source_kind": "fixture-metrics"
+    }
+  ]
+}

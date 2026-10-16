@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -92,6 +93,27 @@ def build_media_assets(
     manifest_path = output / "manifest.json"
     manifest_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return AssetManifest(manifest_path, source_kind, tuple(assets))
+
+
+def write_static_asset_manifest(
+    output_dir: str | Path,
+    asset_sources: Mapping[str, str],
+) -> AssetManifest:
+    output = Path(output_dir)
+    assets = []
+    for name, source_kind in sorted(asset_sources.items()):
+        path = output / name
+        if not path.is_file():
+            raise FileNotFoundError(f"Static asset not found: {path}")
+        assets.append(_asset_record(path, output, source_kind))
+    payload = {
+        "schema_version": 1,
+        "source_kind": "repository-assets",
+        "assets": assets,
+    }
+    manifest_path = output / "manifest.json"
+    manifest_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return AssetManifest(manifest_path, "repository-assets", tuple(assets))
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
