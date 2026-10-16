@@ -21,7 +21,7 @@ from pitchtrack.calibration.geometry import HomographyConfig, estimate_homograph
 from pitchtrack.calibration.hybrid import HybridCalibrationConfig, HybridTemporalCalibrator
 from pitchtrack.calibration.state import CalibrationStateConfig
 from pitchtrack.calibration.temporal import TemporalCalibrationConfig
-from pitchtrack.field_observation.base import FieldObservation
+from pitchtrack.field_observation.base import FieldObservation, FieldObservationProvider
 from pitchtrack.projection.projector import PitchProjector
 from pitchtrack.rendering.overlay import render_annotated_frame
 from pitchtrack.schemas import (
@@ -59,6 +59,74 @@ class CalibrationSource(Protocol):
         frame_index: int,
         detections: Sequence[Detection] = (),
     ) -> CalibrationResult: ...
+
+
+def moving_object_mask(
+    frame_shape: tuple[int, int], detections: Sequence[Detection]
+) -> np.ndarray:
+    height, width = frame_shape
+    mask = np.zeros((height, width), dtype=np.uint8)
+    for detection in detections:
+        x1, y1, x2, y2 = (int(round(value)) for value in detection.bbox_xyxy_px)
+        x1, x2 = max(0, x1), min(width, x2 + 1)
+        y1, y2 = max(0, y1), min(height, y2 + 1)
+        if x1 < x2 and y1 < y2:
+            mask[y1:y2, x1:x2] = 255
+    return mask
+
+
+class FieldCalibrationSource:
+    """Turns semantic field observations into per-frame calibration results."""
+
+    def __init__(
+        self,
+        mode: str,
+        observer: FieldObservationProvider,
+        homography: HomographyConfig,
+        *,
+        state: CalibrationStateConfig = CalibrationStateConfig(),
+        flow: OpticalFlowConfig = OpticalFlowConfig(),
+    ) -> None:
+        if mode not in {"baseline_deeplab", "baseline_tvcalib", "hybrid_temporal"}:
+            raise ValueError(f"unsupported calibration mode: {mode}")
+        self.mode = mode
+        self.observer = observer
+        self.hybrid = (
+            HybridTemporalCalibrator(
+                HybridCalibrationConfig(
+                    temporal=TemporalCalibrationConfig(homography=homography, state=state),
+                    flow=flow,
+                )
+            )
+            if mode == "hybrid_temporal"
+            else None
+        )
+        self.homography = homography
+
+    def update(
+        self,
+        frame_bgr: np.ndarray,
+        frame_index: int,
+        detections: Sequence[Detection] = (),
+    ) -> CalibrationResult:
+        if self.hybrid is None:
+            observation = self.observer.observe(frame_bgr)
+            if observation.is_empty:
+                return CalibrationResult.invalid("field_observation_empty")
+            return estimate_homography(
+                observation.image_points_px,
+                observation.pitch_points_m,
+                self.homography,
+            )
+        needs_observation = self.hybrid.temporal.should_request_observation(frame_index)
+        observation = self.observer.observe(frame_bgr) if needs_observation else None
+        mask = moving_object_mask(frame_bgr.shape[:2], detections)
+        return self.hybrid.update(
+            frame_bgr,
+            mask,
+            observation,
+            frame_index=frame_index,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -233,6 +301,117 @@ def build_fixture_pipeline(
         tracker,
         calibrator,
         config_path=path,
+        reader_factory=reader_factory,
+    )
+
+
+def build_model_pipeline(
+    config_path: str | Path,
+    *,
+    calibration_mode: str,
+    reader_factory: Callable[[Path], VideoReader] = VideoReader,
+) -> OfflinePipeline:
+    """Build a local-only production pipeline from explicit model paths."""
+    from pitchtrack.detection.ultralytics import UltralyticsPersonDetector
+    from pitchtrack.field_observation.deeplab import DeepLabFieldObserver
+    from pitchtrack.field_observation.tvcalib import TVCalibFieldObserver
+    from pitchtrack.tracking.bytetrack import ByteTrackAdapter, ByteTrackConfig
+
+    path = Path(config_path)
+    config = yaml.safe_load(path.read_text(encoding="utf-8"))
+
+    def local_path(value: str) -> Path:
+        candidate = Path(value)
+        return candidate if candidate.is_absolute() else path.parent / candidate
+
+    detector_config = config["detector"]
+    detector = UltralyticsPersonDetector(
+        local_path(detector_config["weights"]),
+        confidence=float(detector_config.get("confidence", 0.25)),
+        device=detector_config.get("device"),
+    )
+    tracker_config = config.get("tracker", {})
+    tracker = ByteTrackAdapter(
+        ByteTrackConfig(
+            max_age_frames=int(tracker_config.get("max_age_frames", 30)),
+            min_iou=float(tracker_config.get("min_iou", 0.2)),
+        )
+    )
+    calibration_config = config["calibration"]
+    observer_mode = (
+        calibration_config.get("hybrid_observer", "baseline_deeplab")
+        if calibration_mode == "hybrid_temporal"
+        else calibration_mode
+    )
+    if observer_mode == "baseline_deeplab":
+        observer = DeepLabFieldObserver(
+            local_path(calibration_config["deeplab_weights"])
+        )
+    elif observer_mode == "baseline_tvcalib":
+        observer = TVCalibFieldObserver(
+            local_path(calibration_config["tvcalib_weights"])
+        )
+    else:
+        raise ValueError(f"unsupported field observer: {observer_mode}")
+    width, height = (int(value) for value in config["video"]["image_size_px"])
+    homography = HomographyConfig(
+        image_size_px=(width, height),
+        ransac_reprojection_threshold=float(
+            calibration_config.get("ransac_reprojection_threshold", 3.0)
+        ),
+        min_inlier_ratio=float(calibration_config.get("min_inlier_ratio", 0.5)),
+        min_spatial_coverage=float(
+            calibration_config.get("min_spatial_coverage", 0.01)
+        ),
+        max_reprojection_error=float(
+            calibration_config.get("max_reprojection_error", 5.0)
+        ),
+    )
+    source = FieldCalibrationSource(
+        calibration_mode,
+        observer,
+        homography,
+        state=CalibrationStateConfig(
+            max_prediction_age_frames=int(
+                calibration_config.get("max_prediction_age_frames", 15)
+            ),
+            prediction_confidence_decay=float(
+                calibration_config.get("prediction_confidence_decay", 0.9)
+            ),
+            reinitialize_interval_frames=int(
+                calibration_config.get("reinitialize_interval_frames", 30)
+            ),
+            max_anchor_disagreement=float(
+                calibration_config.get("max_anchor_disagreement", 5.0)
+            ),
+        ),
+    )
+    return OfflinePipeline(
+        detector,
+        tracker,
+        source,
+        config_path=path,
+        reader_factory=reader_factory,
+    )
+
+
+def build_pipeline(
+    config_path: str | Path,
+    *,
+    calibration_mode: str,
+    reader_factory: Callable[[Path], VideoReader] = VideoReader,
+) -> OfflinePipeline:
+    path = Path(config_path)
+    config = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if config.get("fixture") is True:
+        return build_fixture_pipeline(
+            path,
+            calibration_mode=calibration_mode,
+            reader_factory=reader_factory,
+        )
+    return build_model_pipeline(
+        path,
+        calibration_mode=calibration_mode,
         reader_factory=reader_factory,
     )
 

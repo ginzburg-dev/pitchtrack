@@ -15,6 +15,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+models = ["torch>=2.2", "ultralytics>=8.3"]
 
 [project.scripts]
 pitchtrack = "pitchtrack.cli:main"

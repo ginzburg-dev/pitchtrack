@@ -9,3 +9,7 @@ The planned public demo uses SoccerTrack v2 match `117093`, first half. The data
 The public overlay and README must disclose that the presentation video is a **virtual PTZ crop derived from fixed panoramic footage**. It is not evidence of physical-camera motion. Physical moving-camera results are evaluated separately on SoccerNet assets under SoccerNet's access terms and are not redistributed.
 
 Ultralytics is an optional integration and has AGPL-3.0/enterprise licensing. Review the selected distribution model before publishing binaries or offering a hosted service.
+
+Model weights are never committed or downloaded at runtime. Every adapter requires an
+explicit existing local path. Review the upstream SoccerNet, TVCalib, and detector
+weight licenses before placing artifacts in the ignored `weights/` directory.

@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from dataclasses import replace
 from pathlib import Path
 
-from pitchtrack.pipeline import build_fixture_pipeline
+from pitchtrack.pipeline import build_pipeline
 from pitchtrack.demo.manifest import (
     MissingDemoSourceError,
     load_demo_manifest,
@@ -70,15 +70,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"config={paths.config_path}")
         return 0
     if args.command == "analyze":
-        if args.calibration_mode not in {"fixture", "hybrid_temporal"}:
-            parser.error(
-                f"calibration mode {args.calibration_mode!r} is not available yet; "
-                "use 'fixture' in the current milestone"
+        try:
+            pipeline = build_pipeline(
+                args.config,
+                calibration_mode=args.calibration_mode,
             )
-        summary = build_fixture_pipeline(
-            args.config,
-            calibration_mode=args.calibration_mode,
-        ).run(args.video, args.out)
+        except (FileNotFoundError, RuntimeError, ValueError) as exc:
+            parser.error(str(exc))
+        summary = pipeline.run(args.video, args.out)
         print(f"frames_processed={summary.frames_processed}")
         print(f"output={summary.output_dir}")
         return 0

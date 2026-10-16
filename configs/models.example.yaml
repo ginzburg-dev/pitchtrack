@@ -1,0 +1,22 @@
+# Copy this file outside Git or edit paths to point at locally acquired weights.
+video:
+  image_size_px: [1920, 1080]
+detector:
+  weights: ../weights/yolo11m.pt
+  confidence: 0.35
+  device: null
+tracker:
+  max_age_frames: 30
+  min_iou: 0.2
+calibration:
+  hybrid_observer: baseline_deeplab
+  deeplab_weights: ../weights/soccernet-deeplab-export.ts
+  tvcalib_weights: ../weights/tvcalib-export.ts
+  ransac_reprojection_threshold: 3.0
+  min_inlier_ratio: 0.5
+  min_spatial_coverage: 0.01
+  max_reprojection_error: 5.0
+  max_prediction_age_frames: 15
+  prediction_confidence_decay: 0.9
+  reinitialize_interval_frames: 30
+  max_anchor_disagreement: 5.0
