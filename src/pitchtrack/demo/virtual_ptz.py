@@ -238,10 +238,14 @@ def render_virtual_ptz_video(
     )
 
 
-def _load_frame_candidates(path: Path) -> list[FrameCandidate]:
+def _load_frame_candidates(
+    path: Path,
+    *,
+    source_size: tuple[int, int] | None = None,
+) -> list[FrameCandidate]:
     shipped_frames = list(iter_soccertrack_frames(path))
     if shipped_frames:
-        return annotated_frames_to_candidates(shipped_frames)
+        return annotated_frames_to_candidates(shipped_frames, source_size=source_size)
     data = json.loads(path.read_text(encoding="utf-8"))
     if isinstance(data, dict):
         frames = data.get("frames", data.get("annotations", []))
@@ -288,7 +292,7 @@ def generate_demo_clip(
         int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),
     )
     capture.release()
-    candidates = _load_frame_candidates(assets.annotations_path)
+    candidates = _load_frame_candidates(assets.annotations_path, source_size=source_size)
     gates = manifest.visual_gates
     criteria = ClipSelectionCriteria(
         fps=fps,

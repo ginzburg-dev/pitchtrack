@@ -55,15 +55,28 @@ def iter_soccertrack_frames(path: str | Path) -> Iterator[AnnotatedFrame]:
 
 def annotated_frames_to_candidates(
     frames: Iterable[AnnotatedFrame],
+    *,
+    source_size: tuple[int, int] | None = None,
 ) -> list[FrameCandidate]:
-    return [
-        FrameCandidate(
-            frame_index=frame.frame_index,
-            player_boxes=tuple(PlayerBox(*entity.bbox_xyxy_px) for entity in frame.entities),
-            line_visible=frame.line_visible,
+    candidates = []
+    for frame in frames:
+        boxes = []
+        for entity in frame.entities:
+            x1, y1, x2, y2 = entity.bbox_xyxy_px
+            if source_size is not None:
+                width, height = source_size
+                x1, x2 = max(0.0, x1), min(float(width), x2)
+                y1, y2 = max(0.0, y1), min(float(height), y2)
+            if x2 > x1 and y2 > y1:
+                boxes.append(PlayerBox(x1, y1, x2, y2))
+        candidates.append(
+            FrameCandidate(
+                frame_index=frame.frame_index,
+                player_boxes=tuple(boxes),
+                line_visible=frame.line_visible,
+            )
         )
-        for frame in frames
-    ]
+    return candidates
 
 
 def _frame_index(value: Any) -> int:

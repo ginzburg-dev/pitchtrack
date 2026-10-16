@@ -88,6 +88,28 @@ def test_reader_is_lazy_and_converts_frames_to_clip_candidates(tmp_path: Path) -
     assert candidates[0].player_boxes[0].height == 40.0
 
 
+def test_candidate_boxes_are_clipped_to_source_frame(tmp_path: Path) -> None:
+    source = tmp_path / "gsr.json"
+    payload = {
+        "annotations": [
+            {
+                "image_id": "3000001",
+                "track_id": 7,
+                "supercategory": "object",
+                "bbox_image": {"x": -5, "y": 80, "w": 30, "h": 20},
+            }
+        ]
+    }
+    source.write_text(json.dumps(payload), encoding="utf-8")
+
+    candidates = annotated_frames_to_candidates(
+        iter_soccertrack_frames(source), source_size=(100, 90)
+    )
+
+    box = candidates[0].player_boxes[0]
+    assert (box.x1, box.y1, box.x2, box.y2) == (0.0, 80.0, 25.0, 90.0)
+
+
 def test_reader_rejects_out_of_order_frame_ids(tmp_path: Path) -> None:
     source = tmp_path / "bad.json"
     payload = {
