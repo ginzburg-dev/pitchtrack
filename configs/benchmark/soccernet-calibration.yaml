@@ -1,0 +1,7 @@
+schema_version: 1
+suite: soccernet-calibration
+dataset: SoccerNet Calibration
+split: validation
+input_kind: official_evaluator_manifest
+metrics: [JaC@5, completeness]
+redistribute_source_video: false

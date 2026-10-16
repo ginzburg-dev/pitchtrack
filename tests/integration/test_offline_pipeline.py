@@ -48,6 +48,9 @@ def test_offline_pipeline_writes_synchronized_artifacts(tmp_path: Path) -> None:
     ]
     assert all(record["tracks"][0]["track_id"] == 1 for record in tracks)
     assert all(record["tracks"][0]["field_xy_m"] is not None for record in tracks)
+    assert all(
+        record["tracks"][0]["smoothed_field_xy_m"] is not None for record in tracks
+    )
 
     capture = cv2.VideoCapture(str(output_dir / "annotated.mp4"))
     assert capture.isOpened()
@@ -60,6 +63,9 @@ def test_offline_pipeline_writes_synchronized_artifacts(tmp_path: Path) -> None:
     assert metadata["frames_processed"] == 6
     assert metrics["frames_processed"] == 6
     assert metrics["calibration_status_counts"] == {"valid": 6}
+    assert metrics["dropped_frames"] == 0
+    assert metrics["stage_latency_ms"]["detect"]["sample_count"] == 6
+    assert metrics["stage_latency_ms"]["calibrate"]["p95_ms"] is not None
 
 
 def test_invalid_calibration_preserves_track_but_nulls_pitch_coordinates(
@@ -77,6 +83,10 @@ def test_invalid_calibration_preserves_track_but_nulls_pitch_coordinates(
     tracks = read_jsonl(output_dir / "tracks.jsonl")
     assert [record["tracks"][0]["track_id"] for record in tracks] == [1, 1]
     assert [record["tracks"][0]["field_xy_m"] for record in tracks] == [None, None]
+    assert [record["tracks"][0]["smoothed_field_xy_m"] for record in tracks] == [
+        None,
+        None,
+    ]
     assert [record["calibration"]["status"] for record in tracks] == [
         "invalid",
         "invalid",

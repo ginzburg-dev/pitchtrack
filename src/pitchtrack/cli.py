@@ -12,6 +12,7 @@ from pitchtrack.demo.manifest import (
     resolve_soccertrack_assets,
 )
 from pitchtrack.demo.virtual_ptz import generate_demo_clip
+from pitchtrack.evaluation.benchmark import run_benchmark
 from pitchtrack.schemas import CalibrationStatus
 from pitchtrack.testing.fixture import create_demo_fixture
 
@@ -54,6 +55,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     demo_parser.add_argument("--match-id", default="117093")
     demo_parser.add_argument("--half", type=int, default=1, choices=(1, 2))
+
+    benchmark_parser = subparsers.add_parser(
+        "benchmark", help="Evaluate generated artifacts without fabricating missing metrics."
+    )
+    benchmark_parser.add_argument(
+        "--suite",
+        required=True,
+        choices=("virtual-ptz", "soccernet-calibration", "tracking"),
+    )
+    benchmark_parser.add_argument("--input", required=True, type=Path)
+    benchmark_parser.add_argument("--out", required=True, type=Path)
+    benchmark_parser.add_argument("--dataset")
+    benchmark_parser.add_argument("--split")
     return parser
 
 
@@ -96,6 +110,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"transforms={result.transforms_path}")
         print(f"quality={result.quality_report_path}")
         print(f"attribution={result.attribution_path}")
+        return 0
+    if args.command == "benchmark":
+        try:
+            metrics_path = run_benchmark(
+                args.suite,
+                args.input,
+                args.out,
+                dataset=args.dataset,
+                split=args.split,
+            )
+        except (FileNotFoundError, ValueError) as exc:
+            parser.error(str(exc))
+        print(f"metrics={metrics_path}")
         return 0
     parser.print_help()
     return 0

@@ -1,0 +1,7 @@
+schema_version: 1
+suite: virtual-ptz
+dataset: SoccerTrack v2
+split: public-demo
+input_kind: virtual_ptz_transform_jsonl
+official_metric: false
+notes: Camera-motion continuity benchmark for the disclosed virtual-PTZ demo.

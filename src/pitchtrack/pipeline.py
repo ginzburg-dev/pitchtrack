@@ -6,7 +6,7 @@ import sys
 import time
 from collections import Counter
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Protocol
 
@@ -22,7 +22,12 @@ from pitchtrack.calibration.hybrid import HybridCalibrationConfig, HybridTempora
 from pitchtrack.calibration.state import CalibrationStateConfig
 from pitchtrack.calibration.temporal import TemporalCalibrationConfig
 from pitchtrack.field_observation.base import FieldObservation, FieldObservationProvider
+from pitchtrack.evaluation.performance import (
+    dropped_frames as count_dropped_frames,
+    summarize_stage_latencies,
+)
 from pitchtrack.projection.projector import PitchProjector
+from pitchtrack.projection.smoothing import PitchTrackSmoother
 from pitchtrack.rendering.overlay import render_annotated_frame
 from pitchtrack.schemas import (
     CalibrationResult,
@@ -150,14 +155,20 @@ class OfflinePipeline:
         self.tracker = tracker
         self.calibrator = calibrator
         self.projector = PitchProjector()
+        self.smoother = PitchTrackSmoother()
         self.config_path = config_path
         self.reader_factory = reader_factory
 
     def run(self, video_path: str | Path, output_dir: str | Path) -> RunSummary:
         started = time.perf_counter()
+        self.smoother.reset()
         video_path = Path(video_path)
         output_dir = Path(output_dir)
         status_counts: Counter[str] = Counter()
+        stage_seconds: dict[str, list[float]] = {
+            stage: []
+            for stage in ("detect", "track", "calibrate", "project", "render", "write")
+        }
         frames_processed = 0
         with self.reader_factory(video_path) as reader:
             rendered_width = reader.metadata.width + max(
@@ -169,27 +180,54 @@ class OfflinePipeline:
                 (rendered_width, reader.metadata.height),
             ) as writer:
                 for frame in reader:
+                    stage_started = time.perf_counter()
                     detections = tuple(self.detector.detect(frame.image_bgr))
+                    stage_seconds["detect"].append(time.perf_counter() - stage_started)
+                    stage_started = time.perf_counter()
                     image_tracks = tuple(
                         self.tracker.update(detections, frame.image_bgr)
                     )
+                    stage_seconds["track"].append(time.perf_counter() - stage_started)
+                    stage_started = time.perf_counter()
                     calibration = self.calibrator.update(
                         frame.image_bgr, frame.frame_index, detections
                     )
-                    projected_tracks = tuple(
+                    stage_seconds["calibrate"].append(
+                        time.perf_counter() - stage_started
+                    )
+                    stage_started = time.perf_counter()
+                    raw_tracks = tuple(
                         self.projector.project(track, calibration)
                         for track in image_tracks
                     )
+                    if calibration.status is CalibrationStatus.INVALID:
+                        self.smoother.reset()
+                    projected_tracks = tuple(
+                        replace(
+                            track,
+                            smoothed_field_xy_m=self.smoother.update(
+                                track.track_id,
+                                track.field_xy_m,
+                                calibration.status,
+                            ),
+                        )
+                        for track in raw_tracks
+                    )
+                    stage_seconds["project"].append(time.perf_counter() - stage_started)
                     result = FrameResult(
                         frame_index=frame.frame_index,
                         timestamp_s=frame.timestamp_s,
                         tracks=projected_tracks,
                         calibration=calibration,
                     )
+                    stage_started = time.perf_counter()
                     rendered = render_annotated_frame(
                         frame.image_bgr, projected_tracks, calibration
                     )
+                    stage_seconds["render"].append(time.perf_counter() - stage_started)
+                    stage_started = time.perf_counter()
                     writer.write(result, rendered)
+                    stage_seconds["write"].append(time.perf_counter() - stage_started)
                     frames_processed += 1
                     status_counts[calibration.status.value] += 1
 
@@ -218,6 +256,15 @@ class OfflinePipeline:
                     "elapsed_s": elapsed,
                     "throughput_fps": frames_processed / elapsed if elapsed > 0 else 0.0,
                     "calibration_status_counts": dict(status_counts),
+                    "stage_latency_ms": summarize_stage_latencies(stage_seconds),
+                    "dropped_frames": count_dropped_frames(
+                        expected_frames=(
+                            reader.metadata.declared_frame_count
+                            if reader.metadata.declared_frame_count > 0
+                            else None
+                        ),
+                        processed_frames=frames_processed,
+                    ),
                 }
                 writer.write_summary(metadata, metrics)
         return RunSummary(frames_processed, time.perf_counter() - started, output_dir)

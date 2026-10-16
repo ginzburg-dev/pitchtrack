@@ -10,6 +10,7 @@ data/
 outputs/
 weights/
 checkpoints/
+configs/models.local.yaml
 *.pt
 *.onnx
 

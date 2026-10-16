@@ -1,0 +1,7 @@
+schema_version: 1
+suite: tracking
+dataset: SoccerNet Game State Reconstruction
+split: validation
+input_kind: trackeval_manifest
+metrics: [HOTA]
+redistribute_source_video: false
