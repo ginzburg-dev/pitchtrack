@@ -10,7 +10,7 @@ recorded by Luis Quintero and published under the
 [Pexels License](https://www.pexels.com/license/). The source page marks the clip as
 free to use. The raw MP4 is used locally and is not committed.
 
-The yellow boxes, confidence values, and IDs are real YOLO11n detections followed by
+The rendered boxes, confidence values, and IDs are real YOLO11n detections followed by
 PitchTrack image-space association. This asset demonstrates detection and tracking only;
 it is not evidence of pitch calibration or metric field coordinates.
 
