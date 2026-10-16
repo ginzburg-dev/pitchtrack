@@ -4,10 +4,10 @@ Offline football video analytics for a single continuous moving-camera shot.
 PitchTrack maintains player IDs in image space, estimates a time-varying planar
 homography, and emits pitch coordinates only while the geometry is defensible.
 
-[![PitchTrack player tracking](assets/tracking-showcase.gif)](assets/tracking-showcase.jpg)
+[![PitchTrack player tracking](assets/tracking-showcase.png)](assets/tracking-showcase.gif)
 
 *Real YOLO11n detections and PitchTrack image-space track IDs on a licensed,
-continuous night-match clip. Click for the full-resolution frame.*
+continuous night-match clip. Click the frame to view the 4.6-second sequence.*
 
 ![PitchTrack pipeline](assets/architecture.svg)
 
@@ -35,25 +35,6 @@ output/
 
 `tracks.jsonl` preserves raw and smoothed pitch coordinates. Smoothing state is reset
 across invalid calibration so stale geometry cannot leak into a recovered track.
-
-## Evidence status
-
-![Verified local results](assets/benchmark.svg)
-
-The figure above is generated from a hashed synthetic fixture smoke report. It verifies
-artifact synchronization and measurement plumbing; it is not presented as model quality.
-
-| Evaluation | Status |
-| --- | --- |
-| Official JaC@5 | pending |
-| Official completeness | pending |
-| Official HOTA | pending |
-| Real licensed tracking showcase | available above; Pexels source documented |
-| Moving-camera calibration benchmark | awaiting gated SoccerNet assets |
-
-The tracking showcase is explicitly labelled as model output; it does not claim pitch
-calibration. Annotation-backed reference renders are labelled separately and are never
-described as model output.
 
 ## Run the deterministic fixture
 
@@ -109,8 +90,8 @@ artifact synchronization, media provenance, and reproducible evaluation plumbing
 - Planar field homography, not full physical PTZ or 3D reconstruction.
 - The built-in tracker uses deterministic IoU association with lost-track retention; it
   is not appearance/ReID tracking.
-- Official SoccerNet and tracking scores remain pending until their gated validation data
-  and official evaluators are run.
+- Official benchmark scores are not claimed until the corresponding datasets and
+  evaluators have been run.
 - Live FPS, latency, and dropped-frame behavior are a later phase; current measurements
   describe offline processing only.
 

@@ -4,7 +4,7 @@ PitchTrack source code does not bundle football video, model weights, or private
 
 ## Public tracking showcase
 
-`assets/tracking-showcase.jpg` and `assets/tracking-showcase.gif` are derived from
+`assets/tracking-showcase.png` and `assets/tracking-showcase.gif` are derived from
 [A soccer game is being played on a field](https://www.pexels.com/video/a-soccer-game-is-being-played-on-a-field-15462727/),
 recorded by Luis Quintero and published under the
 [Pexels License](https://www.pexels.com/license/). The source page marks the clip as

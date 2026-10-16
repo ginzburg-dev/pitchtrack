@@ -9,21 +9,15 @@
       "source_kind": "repository-architecture"
     },
     {
-      "name": "benchmark.svg",
-      "bytes": 3468,
-      "sha256": "32e13fca8b1ef9ef0949278f6e052942d92f5e9cfab05d9d7bce2a3af7634f03",
-      "source_kind": "fixture-metrics"
-    },
-    {
-      "name": "tracking-showcase.jpg",
-      "bytes": 202176,
-      "sha256": "f5da25c35400a13ed7beb1dd678d60aa0103f93512524107bf4a9c21ebfc2e30",
+      "name": "tracking-showcase.png",
+      "bytes": 1141666,
+      "sha256": "391ed9e9b8bd6d9df8bc767dfb03a46c80e5d35dedfae53e51b1fee07d1ac23a",
       "source_kind": "model-output-pexels-15462727"
     },
     {
       "name": "tracking-showcase.gif",
-      "bytes": 3344702,
-      "sha256": "38abc6fb145bc02de1c9b18825b2db1d9718c90c720c4df756cd1c45a9f1e6cc",
+      "bytes": 5112449,
+      "sha256": "4d534d26d112b51c8e2a2465aa214269dcf71930294e1c05f08765af2aa195fb",
       "source_kind": "model-output-pexels-15462727"
     }
   ]
