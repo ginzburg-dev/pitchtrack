@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from importlib import import_module
 from pathlib import Path
 
 import cv2
@@ -33,7 +34,7 @@ def encode_gif(
     max_width: int = 960,
 ) -> None:
     try:
-        from PIL import Image
+        image_module = import_module("PIL.Image")
     except ImportError as error:
         raise RuntimeError("GIF encoding requires the 'media' extra (Pillow).") from error
     fps, _, (width, height) = video_metadata(source)
@@ -51,7 +52,7 @@ def encode_gif(
             continue
         frame = cv2.resize(frame, (output_width, output_height), interpolation=cv2.INTER_AREA)
         _label_frame(frame, label)
-        frames.append(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+        frames.append(image_module.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
     capture.release()
     if not frames:
         raise ValueError("selected GIF interval contains no decodable frames")

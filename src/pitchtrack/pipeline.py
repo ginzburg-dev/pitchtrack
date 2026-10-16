@@ -21,7 +21,10 @@ from pitchtrack.calibration.geometry import HomographyConfig, estimate_homograph
 from pitchtrack.calibration.hybrid import HybridCalibrationConfig, HybridTemporalCalibrator
 from pitchtrack.calibration.state import CalibrationStateConfig
 from pitchtrack.calibration.temporal import TemporalCalibrationConfig
+from pitchtrack.detection.ultralytics import UltralyticsPersonDetector
 from pitchtrack.field_observation.base import FieldObservation, FieldObservationProvider
+from pitchtrack.field_observation.deeplab import DeepLabFieldObserver
+from pitchtrack.field_observation.tvcalib import TVCalibFieldObserver
 from pitchtrack.evaluation.performance import (
     dropped_frames as count_dropped_frames,
     summarize_stage_latencies,
@@ -42,6 +45,7 @@ from pitchtrack.testing.mocks import (
     StableSlotTracker,
     StaticCalibrator,
 )
+from pitchtrack.tracking.bytetrack import ByteTrackAdapter, ByteTrackConfig
 from pitchtrack.video import VideoReader
 
 
@@ -363,11 +367,6 @@ def build_model_pipeline(
     reader_factory: Callable[[Path], VideoReader] = VideoReader,
 ) -> OfflinePipeline:
     """Build a local-only production pipeline from explicit model paths."""
-    from pitchtrack.detection.ultralytics import UltralyticsPersonDetector
-    from pitchtrack.field_observation.deeplab import DeepLabFieldObserver
-    from pitchtrack.field_observation.tvcalib import TVCalibFieldObserver
-    from pitchtrack.tracking.bytetrack import ByteTrackAdapter, ByteTrackConfig
-
     path = Path(config_path)
     config = yaml.safe_load(path.read_text(encoding="utf-8"))
 

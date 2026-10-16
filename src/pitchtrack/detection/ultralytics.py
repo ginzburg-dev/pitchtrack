@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
+from importlib import import_module
 from pathlib import Path
 from typing import Any
 
@@ -30,7 +31,7 @@ class UltralyticsPersonDetector:
                 "Provide an existing .pt file; PitchTrack does not download weights."
             )
         try:
-            from ultralytics import YOLO
+            YOLO = import_module("ultralytics").YOLO
         except ImportError as error:
             raise RuntimeError(
                 "Ultralytics is optional. Install PitchTrack with the 'models' extra."

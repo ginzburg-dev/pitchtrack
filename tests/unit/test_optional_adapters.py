@@ -1,3 +1,4 @@
+import ast
 from pathlib import Path
 
 import numpy as np
@@ -8,7 +9,7 @@ from pitchtrack.field_observation.tvcalib import TVCalibFieldObserver
 from pitchtrack.calibration.geometry import HomographyConfig
 from pitchtrack.field_observation.base import FieldObservation
 from pitchtrack.pipeline import FieldCalibrationSource, moving_object_mask
-from pitchtrack.schemas import CalibrationStatus
+from pitchtrack.schemas import CalibrationStatus, Detection
 
 
 def test_field_observers_normalize_a_shared_prediction_contract() -> None:
@@ -34,13 +35,24 @@ def test_optional_observer_requires_explicit_local_weights(observer, tmp_path: P
 
 
 def test_moving_object_mask_covers_detection_boxes() -> None:
-    from pitchtrack.schemas import Detection
-
     mask = moving_object_mask((40, 60), [Detection((10, 5, 20, 30), 0.9)])
 
     assert mask.shape == (40, 60)
     assert mask[10, 15] == 255
     assert mask[0, 0] == 0
+
+
+def test_source_imports_are_module_scoped() -> None:
+    violations = []
+    for path in (Path(__file__).parents[2] / "src").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for container in ast.walk(tree):
+            if not isinstance(container, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                continue
+            for node in ast.walk(container):
+                if isinstance(node, (ast.Import, ast.ImportFrom)):
+                    violations.append(f"{path.name}:{node.lineno}")
+    assert not violations, "nested imports: " + ", ".join(violations)
 
 
 class FakeObserver:

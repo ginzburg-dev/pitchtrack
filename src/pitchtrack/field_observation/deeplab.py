@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
+from importlib import import_module
 from pathlib import Path
 from typing import Any
 
@@ -31,7 +32,7 @@ def _load_torchscript(model_path: str | Path | None, label: str):
             "Provide an exported local checkpoint; PitchTrack does not download weights."
         )
     try:
-        import torch
+        torch = import_module("torch")
     except ImportError as error:
         raise RuntimeError("PyTorch is optional; install the 'models' extra.") from error
     model = torch.jit.load(str(Path(model_path).resolve()), map_location="cpu")
