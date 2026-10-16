@@ -4,6 +4,11 @@ Offline football video analytics for a single continuous moving-camera shot.
 PitchTrack maintains player IDs in image space, estimates a time-varying planar
 homography, and emits pitch coordinates only while the geometry is defensible.
 
+[![PitchTrack player tracking](assets/tracking-showcase.gif)](assets/tracking-showcase.jpg)
+
+*Real YOLO11n detections and PitchTrack image-space track IDs on a licensed,
+continuous night-match clip. Click for the full-resolution frame.*
+
 ![PitchTrack pipeline](assets/architecture.svg)
 
 ## Engineering focus
@@ -43,11 +48,12 @@ artifact synchronization and measurement plumbing; it is not presented as model 
 | Official JaC@5 | pending |
 | Official completeness | pending |
 | Official HOTA | pending |
-| Real licensed demo video | awaiting gated SoccerTrack v2 assets |
+| Real licensed tracking showcase | available above; Pexels source documented |
+| Moving-camera calibration benchmark | awaiting gated SoccerNet assets |
 
-An annotation-backed reference render will be labelled as such. It will never be
-described as model output. Media links are added only after the licensed source and the
-corresponding run artifacts have been verified.
+The tracking showcase is explicitly labelled as model output; it does not claim pitch
+calibration. Annotation-backed reference renders are labelled separately and are never
+described as model output.
 
 ## Run the deterministic fixture
 
